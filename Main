@@ -1,0 +1,97 @@
+import gleam/string
+import sgleam/check
+import gleam/list
+
+pub type Status {
+  Pendente
+  EmAndamento
+  Concluida
+}
+
+// Vamos dividir a Agenda da seguinte forma:
+// Id: Será um Int, o qual não pode se repetir na lista, podemos fazer com que ele vá cresecndo conforme consultas ssão criadas, ou ver se alguma consulta já possui esse id
+// Nome: Será uma string, com o nome do paciente
+// Descricao: Será uma string, com o motivo da consulta
+// Data: String, com a data da consulta e deve ter tamanho 10 (dd/mm/aaaa)
+// Status: Status, podendo ser pendente, em andamento ou concluida
+pub type Agenda {
+  Agenda(id: Int, nome: String, descricao: String, data: String, status: Status)
+}
+
+pub fn criar_consulta(
+  id: Int,
+  nome: String,
+  descricao: String,
+  data: String,
+  status: Status,
+) -> Result(List(Agenda), String) {
+  case validar_consulta(id, nome, descricao, data, status) {
+    True -> 
+    let nova_consulta = Agenda(id, nome, descricao, data, status)
+    let consultas = List(Agenda){
+    adiciona_consulta(Agenda(id, nome, descricao, data, status),consultas)
+    }
+    
+    }
+    False -> Error("Não foi possievl criar a consulta")
+  }
+}
+
+fn validar_consulta(
+  id: Int,
+  nome: String,
+  descricao: String,
+  data: String,
+  status: Status,
+) -> Bool {
+  case
+    validar_id(id),
+    validar_texto(nome),
+    validar_texto(descricao),
+    validar_data(data),
+    validar_status(status)
+  {
+    Ok(_id), Ok(_nome), Ok(_descricao), Ok(_data), Ok(_status) -> True
+    _, _, _, _, _ -> False
+  }
+}
+
+fn validar_id(id: Int) -> Result(Int, Nil) {
+  case id > 0 {
+    True -> Ok(id)
+    False -> Error(Nil)
+  }
+}
+
+fn validar_texto(texto: String) -> Result(String, Nil) {
+  case string.length(texto) > 0 {
+    True -> Ok(texto)
+    False -> Error(Nil)
+  }
+}
+
+fn validar_data(data: String) -> Result(String, Nil) {
+  case
+    string.length(data) == 10
+    && string.slice(data, 2, 1) == "/"
+    && string.slice(data, 5, 1) == "/"
+  {
+    True -> Ok(data)
+    False -> Error(Nil)
+  }
+}
+
+fn validar_status(status: Status) -> Result(Status, Nil) {
+  case status {
+    Pendente -> Ok(Pendente)
+    EmAndamento -> Ok(EmAndamento)
+    Concluida -> Ok(Concluida)
+  }
+}
+
+fn adiciona_consulta(consulta: Agenda, consultas: List(Agenda)) -> List(Agenda) {
+  case consultas {
+    [] -> [consulta]
+    [primeiro, ..resto] -> [consulta, primeiro, ..resto] 
+  }
+}
